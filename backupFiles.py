@@ -14,6 +14,7 @@ from tkFileDialog import askdirectory
 
 import os
 import shutil
+import tkMessageBox
 
 from time import time
 import subprocess as sp
@@ -62,7 +63,7 @@ class Application(Frame):
         self.sep_d = Separator(self.main_container, orient=HORIZONTAL)
         self.sep_e = Separator(self.main_container, orient=HORIZONTAL)
         self.sep_f = Separator(self.main_container, orient=HORIZONTAL)
-        self.mainLabel = Label(self.main_container, text="FOLDER COPY UTILITY", style="M.TLabel" )
+        self.mainLabel = Label(self.main_container, text="FOLDER BACKUP UTILITY", style="M.TLabel" )
         self.subLabelA = Label(self.main_container, text="Copies contents of a source folder to a target folder. The target folder may ", style="S.TLabel" )
         self.subLabelB = Label(self.main_container, text="be initialized, which is recommended. If not, all data in target folder that ", style="S.TLabel" )
         self.subLabelC = Label(self.main_container, text="exists in the source folder will be overwritten.", style="S.TLabel" )
@@ -148,22 +149,22 @@ class Application(Frame):
         self.allSet = True
         
         if self.source == "":
-            self.showMessage("Source folder not yet selected.")
+            tkMessageBox.showerror('Select Source Folder', 'Select source folder to backup.')
             self.allSet = False
             return
 
         if self.target == "":
-            self.showMessage("Target folder not yet selected.")
+            tkMessageBox.showerror('Select Target Folder', 'Select target folder destination.')
             self.allSet = False
             return
 
         if len(os.listdir(self.source)) == 0:
-            self.showMessage("Source folder is empty.")
+            tkMessageBox.showerror('Source Folder Empty', 'Select source folder is empty. Nothing to backup.')
             self.allSet = False
             return
 
         if self.initialize.get() == 1 and self.submit["text"] == "START":
-            self.showMessage("You have chosen to initialize target folder.")
+            tkMessageBox.showinfo('Initialize Target Folder', 'You have selected to initialize the target folder.')
             
 
     def showMessage(self, message):
@@ -271,7 +272,7 @@ class Application(Frame):
         self.copying = 0
 
 root = Tk()
-root.title("FOLDER COPY UTILITY")
+root.title("FOLDER BACKUP UTILITY")
 root.minsize(470, 335)
 root.maxsize(470, 335)
 
