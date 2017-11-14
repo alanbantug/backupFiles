@@ -149,17 +149,17 @@ class Application(Frame):
         self.allSet = True
         
         if self.source == "":
-            tkMessageBox.showerror('Select Source Folder', 'Select source folder to backup.')
+            tkMessageBox.showwarning('Select Source Folder', 'Select source folder to backup.')
             self.allSet = False
             return
 
         if self.target == "":
-            tkMessageBox.showerror('Select Target Folder', 'Select target folder destination.')
+            tkMessageBox.showwarning('Select Target Folder', 'Select target folder destination.')
             self.allSet = False
             return
 
         if len(os.listdir(self.source)) == 0:
-            tkMessageBox.showerror('Source Folder Empty', 'Select source folder is empty. Nothing to backup.')
+            tkMessageBox.showwarning('Source Folder Empty', 'Select source folder is empty. Nothing to backup.')
             self.allSet = False
             return
 
@@ -261,6 +261,11 @@ class Application(Frame):
     def restartProcess(self):
         # Launch notepad to show status of last copy request
 
+        response = tkMessageBox.askquestion('Reset Options', 'Backup options will be reset. Continue?')
+
+        if response == 'no':
+            return
+
         os.chdir(self.origin)
         self.statusLabel["text"] = "Select source and target folders"
         self.sourceLabel["text"] = "None"
@@ -273,8 +278,27 @@ class Application(Frame):
 
 root = Tk()
 root.title("FOLDER BACKUP UTILITY")
-root.minsize(470, 335)
-root.maxsize(470, 335)
+
+# Set size
+
+wh = 335
+ww = 470
+
+#root.resizable(height=False, width=False)
+
+root.minsize(ww, wh)
+root.maxsize(ww, wh)
+
+# Position in center screen
+
+ws = root.winfo_screenwidth() 
+hs = root.winfo_screenheight() 
+
+# calculate x and y coordinates for the Tk root window
+x = (ws/2) - (ww/2)
+y = (hs/2) - (wh/2)
+
+root.geometry('%dx%d+%d+%d' % (ww, wh, x, y))
 
 app = Application(root)
 
