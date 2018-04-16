@@ -2,19 +2,16 @@
 
 ### This utility will copy a folder and its contents into a different folder
 ###
-import Tkinter
-from Tkinter import *
+import tkinter
+from tkinter import *
 
-import ttk
-from ttk import *
+from tkinter.ttk import *
+from tkinter import messagebox
 
-#from Tkinter import *
-#from tkinter.ttk import *
-from tkFileDialog import askdirectory
+from tkinter.filedialog import askdirectory
 
 import os
 import shutil
-import tkMessageBox
 
 from time import time
 import subprocess as sp
@@ -149,22 +146,22 @@ class Application(Frame):
         self.allSet = True
         
         if self.source == "":
-            tkMessageBox.showwarning('Select Source Folder', 'Select source folder to backup.')
+            messagebox.showwarning('Select Source Folder', 'Select source folder to backup.')
             self.allSet = False
             return
 
         if self.target == "":
-            tkMessageBox.showwarning('Select Target Folder', 'Select target folder destination.')
+            messagebox.showwarning('Select Target Folder', 'Select target folder destination.')
             self.allSet = False
             return
 
         if len(os.listdir(self.source)) == 0:
-            tkMessageBox.showwarning('Source Folder Empty', 'Select source folder is empty. Nothing to backup.')
+            messagebox.showwarning('Source Folder Empty', 'Select source folder is empty. Nothing to backup.')
             self.allSet = False
             return
 
         if self.initialize.get() == 1 and self.submit["text"] == "START":
-            tkMessageBox.showinfo('Initialize Target Folder', 'You have selected to initialize the target folder.')
+            messagebox.showinfo('Initialize Target Folder', 'You have selected to initialize the target folder.')
             
 
     def showMessage(self, message):
@@ -218,13 +215,19 @@ class Application(Frame):
 
                 # Delete all files first
                 for file in fileNames:
-                    os.remove(os.path.join(folderName, file))
+                    try:
+                        os.remove(os.path.join(folderName, file))
+                    except:
+                        continue
 
             for folderName, subFolders, fileNames in os.walk(self.target, topdown=False):
 
                 # Delete all folders in target folder next
                 for folder in subFolders:
-                    os.rmdir(os.path.join(folderName, folder))
+                    try:
+                        os.rmdir(os.path.join(folderName, folder))
+                    except:
+                        continue
                     
             
         # Walk thru the source folder, creating subfolders and copying files into the target folder
@@ -261,7 +264,7 @@ class Application(Frame):
     def restartProcess(self):
         # Launch notepad to show status of last copy request
 
-        response = tkMessageBox.askquestion('Reset Options', 'Backup options will be reset. Continue?')
+        response = messagebox.askquestion('Reset Options', 'Backup options will be reset. Continue?')
 
         if response == 'no':
             return
