@@ -19,12 +19,12 @@ import subprocess as sp
 class Application(Frame):
 
     def __init__(self, master):
-        
+
         self.master = master
         self.main_container = Frame(self.master)
 
         # Define the source and target folder variables
-        
+
         self.origin = os.getcwd()
         self.tocopy = 0
         self.copied = IntVar()
@@ -33,7 +33,7 @@ class Application(Frame):
         self.target = ""
         self.allSet = True
         self.initialize = IntVar()
-        
+
         # Create main frame
         self.main_container.grid(column=0, row=0, sticky=(N,S,E,W))
 
@@ -52,7 +52,7 @@ class Application(Frame):
         Style().configure("B.TCheckButton", font="Verdana 8")
 
         Style().configure("O.TLabelframe.Label", font="Verdana 8", foreground="black")
-        
+
         # Create widgets
         self.sep_a = Separator(self.main_container, orient=HORIZONTAL)
         self.sep_b = Separator(self.main_container, orient=HORIZONTAL)
@@ -72,15 +72,15 @@ class Application(Frame):
         self.targetLabel = Label(self.sourceTarget, text="None", style="B.TLabel" )
         self.initTarget = Checkbutton(self.sourceTarget, text="Initialize Target Folder", style="B.TCheckbutton", variable=self.initialize)
         self.sep_s = Separator(self.sourceTarget, orient=HORIZONTAL)
-        
+
         self.statusLabel = Label(self.main_container, text="Select source and target folders", style="G.TLabel")
         self.submit = Button(self.main_container, text="START", style="B.TButton", command=self.startProcess)
         self.restart = Button(self.main_container, text="RESTART", style="B.TButton", command=self.restartProcess)
         self.exit = Button(self.main_container, text="EXIT", style="B.TButton", command=root.destroy)
 
         self.progress_bar = Progressbar(self.main_container, orient="horizontal", mode="indeterminate", maximum=50)
-        
-        # Position widgets        
+
+        # Position widgets
         self.mainLabel.grid(row=0, column=0, columnspan=3, padx=5, pady=5, sticky='NSEW')
         self.subLabelA.grid(row=1, column=0, columnspan=3, padx=5, pady=0, sticky='NSEW')
         self.subLabelB.grid(row=2, column=0, columnspan=3, padx=5, pady=0, sticky='NSEW')
@@ -95,7 +95,7 @@ class Application(Frame):
         self.targetLabel.grid(row=2, column=1, columnspan=2, padx=5, pady=5, sticky='NSEW')
         self.initTarget.grid(row=3, column=0, padx=5, pady=5, sticky='W')
         self.sourceTarget.grid(row=5, column=0, columnspan=3, rowspan=4, padx=5, pady=0, sticky='NSEW')
-        
+
         self.sep_b.grid(row=9, column=0, columnspan=3, padx=5, pady=5, sticky='NSEW')
 
         self.submit.grid(row=10, column=0, columnspan=1, padx=5, pady=0, sticky='NSEW')
@@ -115,7 +115,7 @@ class Application(Frame):
             self.sourceLabel["text"] = os.path.dirname(pathname)[:30] + ".../" + os.path.basename(pathname)
             self.source = pathname
 
-            
+
     def getTarget(self):
         pathname = askdirectory()
 
@@ -128,7 +128,7 @@ class Application(Frame):
 
         if self.submit["text"] == "START":
             self.checkFolders()
-            
+
             if self.allSet:
                 self.submit["text"] = "PROCESS"
                 self.restart["state"] = "DISABLED"
@@ -136,7 +136,7 @@ class Application(Frame):
 
         else:
             self.checkFolders()
-            
+
             if self.allSet:
                 self.processRequest()
 
@@ -144,7 +144,7 @@ class Application(Frame):
     def checkFolders(self):
 
         self.allSet = True
-        
+
         if self.source == "":
             messagebox.showwarning('Select Source Folder', 'Select source folder to backup.')
             self.allSet = False
@@ -162,7 +162,7 @@ class Application(Frame):
 
         if self.initialize.get() == 1 and self.submit["text"] == "START":
             messagebox.showinfo('Initialize Target Folder', 'You have selected to initialize the target folder.')
-            
+
 
     def showMessage(self, message):
 
@@ -196,7 +196,7 @@ class Application(Frame):
         # get start time
 
         t0 = time()
-        
+
         # disable all buttons
 
         self.selectSource["state"] = DISABLED
@@ -207,13 +207,16 @@ class Application(Frame):
         self.exit["state"] = DISABLED
 
         self.statusLabel["text"] = "Processing..."
-        
+
         if self.initialize.get() == 1:
 
             # Target folder will be initialized to ensure that it has same structure as source
             for folderName, subFolders, fileNames in os.walk(self.target):
 
                 # Delete all files first
+                if subFolders == '.git':
+                    continue
+
                 for file in fileNames:
                     try:
                         os.remove(os.path.join(folderName, file))
@@ -228,27 +231,35 @@ class Application(Frame):
                         os.rmdir(os.path.join(folderName, folder))
                     except:
                         continue
-                    
-            
+
+
         # Walk thru the source folder, creating subfolders and copying files into the target folder
-        
+
         for folderName, subFolders, fileNames in os.walk(self.source):
 
             for file in fileNames:
 
                 sub = os.path.relpath(folderName, self.source)
-                
+
                 # Check if the subfolder already exists in the target folder and create it if it is not
-                
-                if sub != ".":
+                # except those that start with a period
+                if sub[0] != ".":
                     if os.path.exists(os.path.join(self.target, sub)):
                         pass
                     else:
                         os.chdir(self.target)
                         os.makedirs(sub)
 
-                shutil.copy(os.path.join(folderName, file), os.path.join(self.target, sub))
-                self.copying += 1
+                # do not copy files under the .git subfolders as it will result in permission errors
+                if sub[:4] == '.git':
+                    pass
+                else:
+
+                    try:
+                        shutil.copy(os.path.join(folderName, file), os.path.join(self.target, sub))
+                        self.copying += 1
+                    except:
+                        continue
 
         self.selectSource["state"] = NORMAL
         self.selectTarget["state"] = NORMAL
@@ -257,9 +268,9 @@ class Application(Frame):
         self.submit["state"] = NORMAL
         self.exit["state"] = NORMAL
 
-        self.progress_bar.stop()            
+        self.progress_bar.stop()
         self.statusLabel["text"] = str(self.copying) + " file(s) copied successfully in %0.1fs." % (time() - t0)
-        
+
 
     def restartProcess(self):
         # Launch notepad to show status of last copy request
@@ -294,8 +305,8 @@ root.maxsize(ww, wh)
 
 # Position in center screen
 
-ws = root.winfo_screenwidth() 
-hs = root.winfo_screenheight() 
+ws = root.winfo_screenwidth()
+hs = root.winfo_screenheight()
 
 # calculate x and y coordinates for the Tk root window
 x = (ws/2) - (ww/2)
